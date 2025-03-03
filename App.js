@@ -67,7 +67,6 @@ app.use((req, res, next) => {
   next();
 });
 
-
 // 3)_ROUTES
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/cars", carRouter);
