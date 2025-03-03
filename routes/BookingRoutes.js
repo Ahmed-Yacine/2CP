@@ -7,13 +7,20 @@ const router = express.Router({ mergeParams: true });
 router.use(authController.protect);
 
 router
-    .route("/")
-    .get(authController.restrictTo("admin"), bookingController.getAllBookings)
-    .post(bookingController.setCarUserIds, bookingController.createBooking);
+  .route("/booking-stats")
+  .get(authController.restrictTo("admin"), bookingController.getBookingsStats);
 
 router
-    .route("/cancel/:id")
-    .patch(authController.restrictTo("user"), bookingController.cancelBookingForCurrentUser);
+  .route("/")
+  .get(authController.restrictTo("admin"), bookingController.getAllBookings)
+  .post(bookingController.setCarUserIds, bookingController.createBooking);
+
+router
+  .route("/cancel/:id")
+  .patch(
+    authController.restrictTo("user"),
+    bookingController.cancelBookingForCurrentUser
+  );
 
 router.use(authController.restrictTo("admin"));
 router

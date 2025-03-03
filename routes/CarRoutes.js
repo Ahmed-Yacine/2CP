@@ -15,6 +15,14 @@ router
   .get(carController.aliasTopCars, carController.getAllCars);
 
 router
+  .route("/car-stats")
+  .get(
+    authController.protect,
+    authController.restrictTo("admin"),
+    carController.getCarStats
+  );
+
+router
   .route("/")
   .get(carController.getAllCars)
   .post(
@@ -24,7 +32,6 @@ router
     carController.resizeCarPhotos,
     carController.createCar
   );
-
 
 router
   .route("/:id")

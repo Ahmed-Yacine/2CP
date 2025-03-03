@@ -16,52 +16,32 @@ const bookingSchema = new mongoose.Schema(
       type: String,
       required: [true, "Please provide the start date"],
     },
-    startHour: {
-      type: Number,
-      required: [true, "Please provide the start hour"],
-    },
     endDate: {
       type: String,
       required: [true, "Please provide the end date"],
     },
-    endHour: {
-      type: Number,
-      required: [true, "Please provide the end hour"],
-    },
     duration: {
       type: Object,
       default: function () {
-        const startDateParts = this.startDate.split("-");
-        const endDateParts = this.endDate.split("-");
+        const startDate = new Date(this.startDate);
+        const endDate = new Date(this.endDate);
+        const timeDifference = endDate - startDate;
 
-        const startYear = parseInt(startDateParts[0]);
-        const startMonth = parseInt(startDateParts[1]) - 1; // JavaScript months are 0-based
-        const startDay = parseInt(startDateParts[2]);
-
-        const endYear = parseInt(endDateParts[0]);
-        const endMonth = parseInt(endDateParts[1]) - 1;
-        const endDay = parseInt(endDateParts[2]);
-
-        const startDateTime = new Date(
-          startYear,
-          startMonth,
-          startDay,
-          this.startHour
-        );
-        const endDateTime = new Date(endYear, endMonth, endDay, this.endHour);
-
-        const durationInMilliseconds = endDateTime - startDateTime;
-        const durationInHours = durationInMilliseconds / 3600000;
-        const totalDays = Math.floor(durationInHours / 24);
-        const hours = durationInHours % 24;
-        const months = Math.floor(totalDays / 30);
-        const days = totalDays % 30;
-
-        return {
-          months: months,
-          days: days,
-          hours: hours,
+        const daysInMonth = (date) => {
+          return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
         };
+
+        let totalDays = Math.floor(timeDifference / (1000 * 60 * 60 * 24));
+        let months = 0;
+
+        while (totalDays >= daysInMonth(startDate)) {
+          totalDays -= daysInMonth(startDate);
+          startDate.setMonth(startDate.getMonth() + 1);
+          months++;
+        }
+
+        const days = totalDays;
+        return { months, days };
       },
     },
     totalCost: Number,
@@ -94,7 +74,7 @@ bookingSchema.pre(/^find/, function (next) {
 });
 
 bookingSchema.pre("save", async function (next) {
-  if (this.startDate > this.endDate) {
+  if (new Date(this.startDate) > new Date(this.endDate)) {
     throw new Error("Start date must be before end date");
   } else if (new Date(this.startDate) < new Date()) {
     throw new Error("Start date must be in the future");
@@ -106,14 +86,12 @@ bookingSchema.pre("save", async function (next) {
     throw new Error("Car not found");
   }
 
-  const carRatePerHour = car.hourlyRate;
-  const carRatePerDay = carRatePerHour * 24;
-  const carRatePerMonth = carRatePerDay * 30;
+  const carRatePerDay = car.dailyRate;
+  const carRatePerMonth = car.monthlyRate;
   const duration = this.duration;
   this.totalCost =
     duration.months * carRatePerMonth +
-    duration.days * carRatePerDay +
-    duration.hours * carRatePerHour;
+    duration.days * carRatePerDay;
 
   next();
 });

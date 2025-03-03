@@ -103,9 +103,10 @@ const carSchema = new mongoose.Schema(
       default: Date.now(),
       select: false,
     },
-    hourlyRate: {
-      type: Number,
-      required: [true, "Please specify the hourly rate"],
+    status: {
+      type: String,
+      enum: ["active", "inactive"],
+      default: "active",
     },
     dailyRate: {
       type: Number,

@@ -1,7 +1,6 @@
 const Favorite = require("../models/favoriteCarModel");
 const catchasync = require("../Utils/CatchAsync");
 const AppError = require("../Utils/AppError");
-const factory = require("./HandlerFactory");
 const User = require("../models/UserModel");
 
 exports.getFavoriteCarsForCurrentUser = catchasync(async (req, res, next) => {
@@ -34,8 +33,11 @@ exports.removeFavoriteCarFromCurrentUser = catchasync(async (req, res, next) => 
         carId: req.params.carId,
     });
     if (!favorite) {
-        return next(new AppError("No favorite found with that ID", 404));
+        return next(new AppError("No favorite car found for the current user with the specified car ID", 404));
     }
+    await User.findByIdAndUpdate(req.user.id, {
+        $pull: { favoriteCars: favorite._id },
+    });
     res.status(204).json({
         status: "success",
         data: null,

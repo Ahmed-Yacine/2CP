@@ -66,6 +66,31 @@ exports.createCar = factory.createOne(Car);
 exports.updateCar = factory.updateOne(Car);
 exports.deleteCar = factory.deleteOne(Car);
 
+exports.getCarStats = catchAsync(async (req, res) => {
+  const stats = await Car.aggregate([
+    {
+      $facet: {
+        totalCars: [{ $count: "total" }],
+        activeCars: [
+          { $match: { status: "active" } },
+          { $count: "total" }
+        ]
+      }
+    },
+    {
+      $project: {
+        totalCars: { $arrayElemAt: ["$totalCars.total", 0] },
+        activeCars: { $arrayElemAt: ["$activeCars.total", 0] }
+      }
+    }
+  ]);
+
+  res.status(200).json({
+    status: "success",
+    data: stats[0]
+  });
+});
+
 exports.aliasTopCars = (req, res, next) => {
   req.query.limit = "5";
   req.query.sort = "-ratingsAverage,hourlyRate,dailyRate,monthlyRate";
