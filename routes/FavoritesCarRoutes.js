@@ -12,9 +12,7 @@ router
   .post(
     favoritesController.setIds,
     favoritesController.addFavoriteCarToCurrentUser
-  );
-router
-  .route("/:id")
+  )
   .delete(favoritesController.removeFavoriteCarFromCurrentUser);
 
 module.exports = router;
