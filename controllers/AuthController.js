@@ -37,7 +37,6 @@ exports.resizeDriverLicensePhotos = catchAsync(async (req, res, next) => {
         const filename = `driverLicense-${Date.now()}-${Math.round(
           Math.random() * 1e9
         )}-${i + 1}.png`;
-        console.log(filename);
         await sharp(file.buffer)
           .resize(2000, 1333)
           .toFormat("png")
