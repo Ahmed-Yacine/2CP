@@ -4,7 +4,7 @@
   "main": "App.js",
   "scripts": {
     "dev": "nodemon server.js",
-    "dev:prod": "NODE_ENV=production nodemon server.js",
+    "prod": "NODE_ENV=production nodemon server.js",
     "debug": "ndb server.js"
   },
   "author": "AHMED YACINE",
