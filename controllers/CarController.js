@@ -46,7 +46,6 @@ exports.resizeCarPhotos = catchAsync(async (req, res, next) => {
         const filename = `car-${Date.now()}-${Math.round(
           Math.random() * 1e9
         )}-${i + 1}.png`;
-        console.log(filename);
         await sharp(file.buffer)
           .resize(2000, 1333)
           .toFormat("png")
@@ -71,30 +70,26 @@ exports.getCarStats = catchAsync(async (req, res) => {
     {
       $facet: {
         totalCars: [{ $count: "total" }],
-        activeCars: [
-          { $match: { status: "active" } },
-          { $count: "total" }
-        ]
-      }
+        activeCars: [{ $match: { status: "active" } }, { $count: "total" }],
+      },
     },
     {
       $project: {
         totalCars: { $arrayElemAt: ["$totalCars.total", 0] },
-        activeCars: { $arrayElemAt: ["$activeCars.total", 0] }
-      }
-    }
+        activeCars: { $arrayElemAt: ["$activeCars.total", 0] },
+      },
+    },
   ]);
 
   res.status(200).json({
     status: "success",
-    data: stats[0]
+    data: stats[0],
   });
 });
 
 exports.aliasTopCars = (req, res, next) => {
   req.query.limit = "5";
-  req.query.sort = "-ratingsAverage,hourlyRate,dailyRate,monthlyRate";
-  req.query.fields =
-    "model,name,ratingsAverage,hourlyRate,dailyRate,monthlyRate";
+  req.query.sort = "-ratingsAverage,dailyRate,monthlyRate";
+  req.query.fields = "model,name,ratingsAverage,dailyRate,monthlyRate";
   next();
 };

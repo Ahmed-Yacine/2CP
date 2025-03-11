@@ -13,7 +13,12 @@ router
 router
   .route("/")
   .get(authController.restrictTo("admin"), bookingController.getAllBookings)
-  .post(bookingController.setCarUserIds, bookingController.createBooking);
+  .post(
+    bookingController.uploadReceiptPhoto,
+    bookingController.resizeReceipt,
+    bookingController.setCarUserIds,
+    bookingController.createBooking
+  );
 
 router
   .route("/cancel/:id")

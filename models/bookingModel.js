@@ -1,5 +1,7 @@
 const mongoose = require("mongoose");
 
+// TODO: Implement the functionality to cancel the booking if the user doesn't pay within 24 hours of the booking.
+
 const bookingSchema = new mongoose.Schema(
   {
     car: {
@@ -19,6 +21,10 @@ const bookingSchema = new mongoose.Schema(
     endDate: {
       type: String,
       required: [true, "Please provide the end date"],
+    },
+    receiptPhoto: {
+      type: String,
+      required: [true, "Please provide the receipt photo"]
     },
     duration: {
       type: Object,
@@ -90,8 +96,7 @@ bookingSchema.pre("save", async function (next) {
   const carRatePerMonth = car.monthlyRate;
   const duration = this.duration;
   this.totalCost =
-    duration.months * carRatePerMonth +
-    duration.days * carRatePerDay;
+    duration.months * carRatePerMonth + duration.days * carRatePerDay;
 
   next();
 });
