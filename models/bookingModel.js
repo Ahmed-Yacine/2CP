@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 
-// TODO: Implement the functionality to cancel the booking if the user doesn't pay within 24 hours of the booking.
+// TODO: Implement the double booking functionality. :)
+// TODO: Implement the functionality to cancel the booking if the user doesn't pay within 24 hours of the booking has Approved.
 
 const bookingSchema = new mongoose.Schema(
   {
