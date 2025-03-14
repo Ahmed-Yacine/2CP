@@ -31,11 +31,11 @@ exports.handleDriverLicense = [
     const resizeAndSaveImage = async (file, i) => {
       const filename = `driverLicense-${Date.now()}-${Math.round(
         Math.random() * 1e9
-      )}-${i + 1}.png`;
+      )}-${i + 1}.webp`;
       await sharp(file.buffer)
         .resize(800, 533)
-        .toFormat("png")
-        .png({ quality: 90 })
+        .toFormat("webp")
+        .webp({ quality: 90 })
         .toFile(`public/img/driverLicense/${filename}`);
       return filename;
     };

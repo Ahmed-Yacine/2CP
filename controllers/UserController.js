@@ -23,12 +23,12 @@ exports.uploadUserPhoto = upload.single("photo");
 
 exports.resizeUserPhoto = catchAsync(async (req, res, next) => {
   if (!req.file) return next();
-  req.file.filename = `user-${req.user.id}-${Date.now()}.png`;
+  req.file.filename = `user-${req.user.id}-${Date.now()}.webp`;
 
   await sharp(req.file.buffer)
     .resize(500, 500)
-    .toFormat("png")
-    .png({ quality: 90 })
+    .toFormat("webp")
+    .webp({ quality: 90 })
     .toFile(`public/img/users/${req.file.filename}`);
 
   next();

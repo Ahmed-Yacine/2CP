@@ -4,6 +4,8 @@ const AppError = require("./../Utils/AppError");
 const factory = require("./HandlerFactory");
 const multer = require("multer");
 const sharp = require("sharp");
+const mkdirp = require("mkdirp");
+const path = require("path");
 
 const multerStorage = multer.memoryStorage();
 const multerFilter = (req, file, cb) => {
@@ -25,17 +27,22 @@ exports.uploadCarPhotos = upload.fields([
 ]);
 
 exports.resizeCarPhotos = catchAsync(async (req, res, next) => {
-  if (!req.files.imageCover || !req.files.images) return next();
+  if (!req.files.imageCover && !req.files.images) return next();
+
+  // Ensure the output directory exists
+  const outputDir = path.join(__dirname, "public/img/cars");
+  mkdirp(outputDir);
+
   // Process cover image
   if (req.files.imageCover) {
     req.body.imageCover = `car-${Date.now()}-${Math.round(
       Math.random() * 1e9
-    )}-cover.png`;
+    )}-cover.webp`;
     await sharp(req.files.imageCover[0].buffer)
-      .resize(1400, 1000)
-      .toFormat("png")
-      .png({ quality: 90 })
-      .toFile(`public/img/cars/${req.body.imageCover}`);
+      .resize(1200, 800, { fit: "cover" }) // Resize and crop to fit
+      .toFormat("webp") // Use WebP for better performance
+      .webp({ quality: 80 }) // Adjust quality for smaller file size
+      .toFile(path.join(outputDir, req.body.imageCover));
   }
 
   // Process other images
@@ -45,12 +52,12 @@ exports.resizeCarPhotos = catchAsync(async (req, res, next) => {
       req.files.images.map(async (file, i) => {
         const filename = `car-${Date.now()}-${Math.round(
           Math.random() * 1e9
-        )}-${i + 1}.png`;
+        )}-${i + 1}.webp`;
         await sharp(file.buffer)
-          .resize(2000, 1333)
-          .toFormat("png")
-          .png({ quality: 90 })
-          .toFile(`public/img/cars/${filename}`);
+          .resize(1200, 800, { fit: "cover" }) // Resize and crop to fit
+          .toFormat("webp") // Use WebP for better performance
+          .webp({ quality: 80 }) // Adjust quality for smaller file size
+          .toFile(path.join(outputDir, filename));
         req.body.images.push(filename);
       })
     );
