@@ -26,11 +26,11 @@ exports.uploadReceiptPhoto = upload.single('receiptPhoto');
 
 exports.resizeReceipt = catchAsync(async (req, res, next) => {
   if (!req.file) return next();
-  req.body.receiptPhoto = `receiptPhoto-${req.user.id}-${Date.now()}.png`;
+  req.body.receiptPhoto = `receiptPhoto-${req.user.id}-${Date.now()}.webp`;
   await sharp(req.file.buffer)
     .resize(2000, 1333)
-    .toFormat("png")
-    .png({ quality: 90 })
+    .toFormat("webp")
+    .webp({ quality: 90 })
     .toFile(`public/img/receiptPhotos/${req.body.receiptPhoto}`);
 
   next();

@@ -4,7 +4,11 @@ const authController = require("../controllers/AuthController");
 
 const router = express.Router();
 
-router.post("/signup",authController.handleDriverLicense, authController.signup);
+router.post(
+  "/signup",
+  authController.handleDriverLicense,
+  authController.signup
+);
 router.post("/login", authController.login);
 router.get("/logout", authController.logout);
 router.post("/forgotPassword", authController.forgotPassword);

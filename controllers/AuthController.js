@@ -35,7 +35,7 @@ exports.handleDriverLicense = [
       await sharp(file.buffer)
         .resize(800, 533)
         .toFormat("webp")
-        .webp({ quality: 90 })
+        .webp({ quality: 80 })
         .toFile(`public/img/driverLicense/${filename}`);
       return filename;
     };

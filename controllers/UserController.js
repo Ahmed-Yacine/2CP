@@ -28,9 +28,9 @@ exports.resizeUserPhoto = catchAsync(async (req, res, next) => {
   await sharp(req.file.buffer)
     .resize(500, 500)
     .toFormat("webp")
-    .webp({ quality: 90 })
+    .webp({ quality: 80 })
     .toFile(`public/img/users/${req.file.filename}`);
-
+    
   next();
 });
 
