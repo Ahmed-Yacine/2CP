@@ -40,7 +40,9 @@ exports.handleDriverLicense = [
       return filename;
     };
 
-    const driverLicensePromises = req.files.driverLicense.map(resizeAndSaveImage);
+    const driverLicensePromises = req.files.driverLicense.map((file, i) =>
+      resizeAndSaveImage(file, i)
+    );
     req.body.driverLicense = await Promise.all(driverLicensePromises);
 
     next();
