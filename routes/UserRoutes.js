@@ -6,8 +6,7 @@ const router = express.Router();
 
 router.post(
   "/signup",
-  authController.uploadDriverLicense,
-  authController.resizeDriverLicensePhotos,
+  authController.handleDriverLicense,
   authController.signup
 );
 router.post("/login", authController.login);

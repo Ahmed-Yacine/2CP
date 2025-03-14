@@ -1,37 +1,49 @@
-const mongoose = require('mongoose');
-const dotenv = require('dotenv');
-  // Uncaught Exception
-  process.on('uncaughtException', err => {
-    console.log('UNCAUGHT EXCEPTION! 💥 Shutting Down...');
-    console.log(err.name, err.message);
-    process.exit(1);
-  });
-  
-dotenv.config({ path: './config.env' });
-  
-const app = require('./App');
-const { db } = require('./models/UserModel');
+const mongoose = require("mongoose");
+const dotenv = require("dotenv");
+const http = require("http");
+const { Server } = require("socket.io");
 
-
-const DB = process.env.DATABASE.replace("<PASSWORD>", process.env.DATABASE_PASSWORD);
-mongoose.connect(DB)
-.then( 
-  async con => 
-    {
-    console.log('DB connection successful!');
-  }
-);
-
-const port = process.env.PORT || 3000;
-const Server = app.listen(port, () => {
-    console.log(`Server is running on port ${port}`);
+// Uncaught Exception
+process.on("uncaughtException", (err) => {
+  console.log("UNCAUGHT EXCEPTION! 💥 Shutting Down...");
+  console.log(err.name, err.message);
+  process.exit(1);
 });
 
-  // Unhandled Rejection
-  process.on('unhandledRejection', err => {
-    console.log('UNHANDLED REJECTION! 💥 Shutting down...');
-    console.log(err.name, err.message);
-    Server.close(() => {
-      process.exit(1);
-    });
+dotenv.config({ path: "./config.env" });
+
+const app = require("./App");
+const { db } = require("./models/UserModel");
+
+const DB = process.env.DATABASE.replace(
+  "<PASSWORD>",
+  process.env.DATABASE_PASSWORD
+);
+mongoose.connect(DB).then(async (con) => {
+  console.log("DB connection successful!");
+});
+
+const port = process.env.PORT || 3000;
+const server = http.createServer(app);
+const io = new Server(server);
+
+io.on("connection", (socket) => {
+  console.log("New WebSocket connection");
+
+  socket.on("disconnect", () => {
+    console.log("WebSocket disconnected");
   });
+});
+
+server.listen(port, () => {
+  console.log(`Server is running on port ${port}`);
+});
+
+// Unhandled Rejection
+process.on("unhandledRejection", (err) => {
+  console.log("UNHANDLED REJECTION! 💥 Shutting down...");
+  console.log(err.name, err.message);
+  server.close(() => {
+    process.exit(1);
+  });
+});
