@@ -33,7 +33,7 @@ exports.handleDriverLicense = [
         Math.random() * 1e9
       )}-${i + 1}.png`;
       await sharp(file.buffer)
-        .resize(2000, 1333)
+        .resize(1200, 800)
         .toFormat("png")
         .png({ quality: 90 })
         .toFile(`public/img/driverLicense/${filename}`);
