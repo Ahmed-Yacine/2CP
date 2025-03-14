@@ -32,7 +32,7 @@ exports.resizeCarPhotos = catchAsync(async (req, res, next) => {
       Math.random() * 1e9
     )}-cover.png`;
     await sharp(req.files.imageCover[0].buffer)
-      .resize(2000, 1333)
+      .resize(1400, 1000)
       .toFormat("png")
       .png({ quality: 90 })
       .toFile(`public/img/cars/${req.body.imageCover}`);
