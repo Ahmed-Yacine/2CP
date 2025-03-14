@@ -22,53 +22,26 @@ const upload = multer({
   fileFilter: multerFilter,
 });
 
-// exports.uploadDriverLicense = upload.fields([
-//   { name: "driverLicense", maxCount: 2 },
-// ]);
-
-// exports.resizeDriverLicensePhotos = catchAsync(async (req, res, next) => {
-//   if (!req.files.driverLicense) return next();
-//   // Process other images
-//   if (req.files.driverLicense) {
-//     req.body.driverLicense = [];
-
-//     await Promise.all(
-//       req.files.driverLicense.map(async (file, i) => {
-//         const filename = `driverLicense-${Date.now()}-${Math.round(
-//           Math.random() * 1e9
-//         )}-${i + 1}.png`;
-//         await sharp(file.buffer)
-//           .resize(2000, 1333)
-//           .toFormat("png")
-//           .png({ quality: 90 })
-//           .toFile(`public/img/driverLicense/${filename}`);
-//         req.body.driverLicense.push(filename);
-//       })
-//     );
-//   }
-
-//   next();
-// });
-
 exports.handleDriverLicense = [
   upload.fields([{ name: "driverLicense", maxCount: 2 }]),
   catchAsync(async (req, res, next) => {
     if (!req.files.driverLicense) return next();
     req.body.driverLicense = [];
 
-    await Promise.all(
-      req.files.driverLicense.map(async (file, i) => {
-        const filename = `driverLicense-${Date.now()}-${Math.round(
-          Math.random() * 1e9
-        )}-${i + 1}.png`;
-        await sharp(file.buffer)
-          .resize(2000, 1333)
-          .toFormat("png")
-          .png({ quality: 90 })
-          .toFile(`public/img/driverLicense/${filename}`);
-        req.body.driverLicense.push(filename);
-      })
-    );
+    const resizeAndSaveImage = async (file, i) => {
+      const filename = `driverLicense-${Date.now()}-${Math.round(
+        Math.random() * 1e9
+      )}-${i + 1}.png`;
+      await sharp(file.buffer)
+        .resize(2000, 1333)
+        .toFormat("png")
+        .png({ quality: 90 })
+        .toFile(`public/img/driverLicense/${filename}`);
+      return filename;
+    };
+
+    const driverLicensePromises = req.files.driverLicense.map(resizeAndSaveImage);
+    req.body.driverLicense = await Promise.all(driverLicensePromises);
 
     next();
   }),
