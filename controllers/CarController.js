@@ -28,16 +28,15 @@ exports.resizeCarPhotos = catchAsync(async (req, res, next) => {
 
   // Process cover image
   if (req.files.imageCover) {
-    req.body.imageCover = `car-${Date.now()}-${Math.round(
-      Math.random() * 1e9
-    )}-cover.jpeg`;
+    const file = `car-${Date.now()}-${Math.round(Math.random() * 1e9)}-cover.jpeg`;
+
     await sharp(req.files.imageCover[0].buffer)
       .resize(1200, 800) // Resize and crop to fit
       .toFormat("jpeg") // Use JPEG format
       .jpeg({ quality: 80 }) // Adjust quality for smaller file size
-      .toFile(`public/img/cars/${req.body.imageCover}`);
+      .toFile(`public/img/cars/${file}`);
 
-    req.body.imageCover = `public/img/cars/${req.body.imageCover}`;
+    req.body.imageCover = `public/img/cars/${file}`;
   }
 
   // Process other images
