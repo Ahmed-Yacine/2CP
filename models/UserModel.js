@@ -23,14 +23,13 @@ const userSchema = new mongoose.Schema({
   },
   photo: {
     type: String,
-    default: "default.png",
+    default: "public/img/users/default.jpeg",
   },
   driverLicense: {
     type: [String],
-    required: [true, "Please provide your driver license"],
-    unique: true,
     validate: {
       validator: function (value) {
+        if (this.role === "admin") return true;
         if (value.length === 0) {
           return false;
         } else if (value.length !== 2) {
@@ -39,6 +38,7 @@ const userSchema = new mongoose.Schema({
         return true;
       },
       message: function (props) {
+        if (this.role === "admin") return "";
         if (props.value.length === 0) {
           return "Please provide your driver license";
         } else if (props.value.length !== 2) {

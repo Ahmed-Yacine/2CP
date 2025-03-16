@@ -7,6 +7,8 @@ const sharp = require("sharp");
 
 // TODO: Implement the functionality to upload the receipt photo. :)DONE
 // TODO: Rewrite the functionality of calculate the total income and check if the user has paid or not. :)DONE
+// TODO: Implement functionality to handle booking conflicts by checking if the requested time slot is already taken by another user.
+// If so, notify the user that the time slot is unavailable.
 
 const multerStorage = multer.memoryStorage();
 const multerFilter = (req, file, cb) => {
@@ -22,16 +24,18 @@ const upload = multer({
   fileFilter: multerFilter,
 });
 
-exports.uploadReceiptPhoto = upload.single('receiptPhoto');
+exports.uploadReceiptPhoto = upload.single("receiptPhoto");
 
 exports.resizeReceipt = catchAsync(async (req, res, next) => {
   if (!req.file) return next();
-  req.body.receiptPhoto = `receiptPhoto-${req.user.id}-${Date.now()}.webp`;
+  req.body.receiptPhoto = `receiptPhoto-${req.user.id}-${Date.now()}.jpeg`;
   await sharp(req.file.buffer)
     .resize(2000, 1333)
-    .toFormat("webp")
-    .webp({ quality: 90 })
+    .toFormat("jpeg")
+    .jpeg({ quality: 90 })
     .toFile(`public/img/receiptPhotos/${req.body.receiptPhoto}`);
+
+  req.body.receiptPhoto = `public/img/receiptPhotos/${req.body.receiptPhoto}`;
 
   next();
 });

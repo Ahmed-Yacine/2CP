@@ -30,12 +30,14 @@ exports.resizeCarPhotos = catchAsync(async (req, res, next) => {
   if (req.files.imageCover) {
     req.body.imageCover = `car-${Date.now()}-${Math.round(
       Math.random() * 1e9
-    )}-cover.webp`;
+    )}-cover.jpeg`;
     await sharp(req.files.imageCover[0].buffer)
       .resize(1200, 800, { fit: "cover" }) // Resize and crop to fit
-      .toFormat("webp") // Use WebP for better performance
-      .webp({ quality: 80 }) // Adjust quality for smaller file size
+      .toFormat("jpeg") // Use JPEG format
+      .jpeg({ quality: 80 }) // Adjust quality for smaller file size
       .toFile(`public/img/cars/${req.body.imageCover}`);
+
+    req.body.imageCover = `public/img/cars/${req.body.imageCover}`;
   }
 
   // Process other images
@@ -45,13 +47,13 @@ exports.resizeCarPhotos = catchAsync(async (req, res, next) => {
       req.files.images.map(async (file, i) => {
         const filename = `car-${Date.now()}-${Math.round(
           Math.random() * 1e9
-        )}-${i + 1}.webp`;
+        )}-${i + 1}.jpeg`;
         await sharp(file.buffer)
           .resize(1200, 800) // Resize and crop to fit
-          .toFormat("webp") // Use WebP for better performance
-          .webp({ quality: 80 }) // Adjust quality for smaller file size
+          .toFormat("jpeg") // Use JPEG format
+          .jpeg({ quality: 80 }) // Adjust quality for smaller file size
           .toFile(`public/img/cars/${filename}`);
-        req.body.images.push(filename);
+        req.body.images.push(`public/img/cars/${filename}`);
       })
     );
   }
