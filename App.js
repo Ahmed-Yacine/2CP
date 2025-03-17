@@ -26,6 +26,9 @@ app.set("views", path.join(__dirname, "views"));
 // Set security http headers
 app.use(helmet());
 
+// Serving static files
+app.use(express.static(path.join(__dirname, 'public')));
+
 // Developement Logging
 console.log(process.env.NODE_ENV);
 if (process.env.NODE_ENV === "development") {

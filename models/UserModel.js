@@ -23,7 +23,7 @@ const userSchema = new mongoose.Schema({
   },
   photo: {
     type: String,
-    default: "public/img/users/default.jpeg",
+    default: "default.jpeg",
   },
   driverLicense: {
     type: [String],
