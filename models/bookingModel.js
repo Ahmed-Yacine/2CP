@@ -23,10 +23,6 @@ const bookingSchema = new mongoose.Schema(
       type: String,
       required: [true, "Please provide the end date"],
     },
-    receiptPhoto: {
-      type: String,
-      required: [true, "Please provide the receipt photo"]
-    },
     duration: {
       type: Object,
       default: function () {
