@@ -2,43 +2,12 @@ const Booking = require("../models/bookingModel");
 const factory = require("./HandlerFactory");
 const catchAsync = require("./../Utils/CatchAsync");
 const AppError = require("./../Utils/AppError");
-const multer = require("multer");
-const sharp = require("sharp");
 
 // TODO: Implement the functionality to upload the receipt photo. :)DONE
 // TODO: Rewrite the functionality of calculate the total income and check if the user has paid or not. :)DONE
 // TODO: Implement functionality to handle booking conflicts by checking if the requested time slot is already taken by another user.
 // If so, notify the user that the time slot is unavailable.
 
-const multerStorage = multer.memoryStorage();
-const multerFilter = (req, file, cb) => {
-  if (file.mimetype.startsWith("image")) {
-    cb(null, true);
-  } else {
-    cb(new AppError("Not an image! Please upload only images.", 400), false);
-  }
-};
-
-const upload = multer({
-  storage: multerStorage,
-  fileFilter: multerFilter,
-});
-
-exports.uploadReceiptPhoto = upload.single("receiptPhoto");
-
-exports.resizeReceipt = catchAsync(async (req, res, next) => {
-  if (!req.file) return next();
-  req.body.receiptPhoto = `receiptPhoto-${req.user.id}-${Date.now()}.jpeg`;
-  await sharp(req.file.buffer)
-    .resize(2000, 1333)
-    .toFormat("jpeg")
-    .jpeg({ quality: 90 })
-    .toFile(`public/img/receiptPhotos/${req.body.receiptPhoto}`);
-
-  req.body.receiptPhoto = `public/img/receiptPhotos/${req.body.receiptPhoto}`;
-
-  next();
-});
 
 exports.setCarUserIds = (req, res, next) => {
   if (!req.body.car) req.body.car = req.params.carId;
