@@ -2,36 +2,24 @@ const User = require("../models/UserModel");
 const catchAsync = require("./../Utils/CatchAsync");
 const AppError = require("./../Utils/AppError");
 const factory = require("./HandlerFactory");
-const multer = require("multer");
-const sharp = require("sharp");
-
-const multerStorage = multer.memoryStorage();
-const multerFilter = (req, file, cb) => {
-  if (file.mimetype.startsWith("image")) {
-    cb(null, true);
-  } else {
-    cb(new AppError("Not an image! Please upload only images.", 400), false);
-  }
-};
-
-const upload = multer({
-  storage: multerStorage,
-  fileFilter: multerFilter,
-});
+const cloudinary = require("../Utils/Cloudinary");
+const upload = require("../Utils/multer");
 
 exports.uploadUserPhoto = upload.single("photo");
 
 exports.resizeUserPhoto = catchAsync(async (req, res, next) => {
   if (!req.file) return next();
-  req.file.filename = `user-${req.user.id}-${Date.now()}.jpeg`;
 
-  await sharp(req.file.buffer)
-    .resize(500, 500)
-    .toFormat("jpeg")
-    .jpeg({ quality: 80 })
-    .toFile(`public/img/users/${req.file.filename}`);
-
-  req.body.photo = `${process.env.URL}public/img/users/${req.file.filename}`;
+  // 1) Upload image to Cloudinary
+  const result = await cloudinary.uploader.upload(req.file.path, {
+    folder: "users",
+    transformation: [
+      { width: 500, height: 500, crop: "limit" },
+      { quality: "auto" },
+    ],
+  });
+  // 2) Save the image to the user document
+  req.body.photo = result.secure_url;
 
   next();
 });

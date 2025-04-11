@@ -23,7 +23,7 @@ const userSchema = new mongoose.Schema({
   },
   photo: {
     type: String,
-    default: "default.jpeg",
+    default: "https://res.cloudinary.com/dj62xbjdj/image/upload/v1744405654/users/cmyxe78ik9z4ydga4yfj.jpg",
   },
   driverLicense: {
     type: [String],

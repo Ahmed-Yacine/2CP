@@ -5,22 +5,8 @@ const User = require("./../models/UserModel");
 const catchAsync = require("./../Utils/CatchAsync");
 const AppError = require("./../Utils/AppError");
 const Email = require("./../Utils/Email");
-const sharp = require("sharp");
-const multer = require("multer");
-
-const multerStorage = multer.memoryStorage();
-const multerFilter = (req, file, cb) => {
-  if (file.mimetype.startsWith("image")) {
-    cb(null, true);
-  } else {
-    cb(new AppError("Not an image! Please upload only images.", 400), false);
-  }
-};
-
-const upload = multer({
-  storage: multerStorage,
-  fileFilter: multerFilter,
-});
+const cloudinary = require("../Utils/Cloudinary");
+const upload = require("../Utils/multer");
 
 exports.handleDriverLicense = [
   upload.fields([{ name: "driverLicense", maxCount: 2 }]),
@@ -29,15 +15,12 @@ exports.handleDriverLicense = [
     req.body.driverLicense = [];
 
     const resizeAndSaveImage = async (file, i) => {
-      const filename = `driverLicense-${Date.now()}-${Math.round(
-        Math.random() * 1e9
-      )}-${i + 1}.jpeg`;
-      await sharp(file.buffer)
-        .resize(800, 533)
-        .toFormat("jpeg")
-        .jpeg({ quality: 80 })
-        .toFile(`public/img/driverLicenses/${filename}`);
-      return `public/img/driverLicenses/${filename}`;
+      const uploadedImage = await cloudinary.uploader.upload(file.path, {
+        folder: "driverLicenses",
+        public_id: `driverLicense_${Date.now()}_${i}`,
+        resource_type: "image",
+      });
+      return uploadedImage.secure_url;
     };
 
     const driverLicensePromises = req.files.driverLicense.map((file, i) =>
