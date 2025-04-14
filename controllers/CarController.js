@@ -2,57 +2,36 @@ const Car = require("../models/CarModel");
 const catchAsync = require("./../Utils/CatchAsync");
 const AppError = require("./../Utils/AppError");
 const factory = require("./HandlerFactory");
-const multer = require("multer");
-const sharp = require("sharp");
-
-const multerStorage = multer.memoryStorage();
-const multerFilter = (req, file, cb) => {
-  if (file.mimetype.startsWith("image")) {
-    cb(null, true);
-  } else {
-    cb(new AppError("Not an image! Please upload only images.", 400), false);
-  }
-};
-
-const upload = multer({
-  storage: multerStorage,
-  fileFilter: multerFilter,
-});
+const cloudinary = require("../Utils/Cloudinary");
+const upload = require("../Utils/multer");
 
 exports.uploadCarPhotos = upload.fields([
   { name: "imageCover", maxCount: 1 },
   { name: "images", maxCount: 5 },
 ]);
+
 exports.resizeCarPhotos = catchAsync(async (req, res, next) => {
   if (!req.files.imageCover && !req.files.images) return next();
 
   // Process cover image
   if (req.files.imageCover) {
-    const file = `car-${Date.now()}-${Math.round(Math.random() * 1e9)}-cover.jpeg`;
-
-    await sharp(req.files.imageCover[0].buffer)
-      .resize(1200, 800) // Resize and crop to fit
-      .toFormat("jpeg") // Use JPEG format
-      .jpeg({ quality: 80 }) // Adjust quality for smaller file size
-      .toFile(`public/img/cars/${file}`);
-
-    req.body.imageCover = `public/img/cars/${file}`;
+    const result = await cloudinary.uploader.upload(req.files.imageCover[0].path, {
+      folder: "cars",
+      transformation: [{ width: 1200, height: 800, crop: "fill" }],
+    });
+    req.body.imageCover = result.secure_url;
   }
 
   // Process other images
   if (req.files.images) {
     req.body.images = [];
     await Promise.all(
-      req.files.images.map(async (file, i) => {
-        const filename = `car-${Date.now()}-${Math.round(
-          Math.random() * 1e9
-        )}-${i + 1}.jpeg`;
-        await sharp(file.buffer)
-          .resize(1200, 800) // Resize and crop to fit
-          .toFormat("jpeg") // Use JPEG format
-          .jpeg({ quality: 80 }) // Adjust quality for smaller file size
-          .toFile(`public/img/cars/${filename}`);
-        req.body.images.push(`public/img/cars/${filename}`);
+      req.files.images.map(async (file) => {
+        const result = await cloudinary.uploader.upload(file.path, {
+          folder: "cars",
+          transformation: [{ width: 1200, height: 800, crop: "fill" }],
+        });
+        req.body.images.push(result.secure_url);
       })
     );
   }
