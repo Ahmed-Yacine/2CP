@@ -70,6 +70,6 @@ exports.getCarStats = catchAsync(async (req, res) => {
 exports.aliasTopCars = (req, res, next) => {
   req.query.limit = "5";
   req.query.sort = "-ratingsAverage,dailyRate,monthlyRate";
-  req.query.fields = "model,name,ratingsAverage,dailyRate,monthlyRate";
+  req.query.fields = "model,name,ratingsAverage,dailyRate,monthlyRate,imageCover,passengers,transmission,airConditioning";
   next();
 };
