@@ -6,7 +6,7 @@ const helmet = require("helmet");
 const mongoSanitize = require("express-mongo-sanitize");
 const xss = require("xss-clean");
 const hpp = require("hpp");
-const cookieParser = require('cookie-parser');
+const cookieParser = require("cookie-parser");
 
 // Erors handling Functions
 const globalErrorHandler = require("./controllers/ErrorController");
@@ -27,7 +27,7 @@ app.set("views", path.join(__dirname, "views"));
 app.use(helmet());
 
 // Serving static files
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, "public")));
 
 // Developement Logging
 console.log(process.env.NODE_ENV);
@@ -36,17 +36,17 @@ if (process.env.NODE_ENV === "development") {
 }
 
 // limit requests from same Api
-const limiter = rateLimit({
-  max: 100,
-  windowMs: 60 * 60 * 1000,
-  message: "Too many requests from this IP, please try again in an hour!",
-});
+// const limiter = rateLimit({
+//   max: 100,
+//   windowMs: 60 * 60 * 1000,
+//   message: "Too many requests from this IP, please try again in an hour!",
+// });
 
-app.use("/api", limiter);
+// app.use("/api", limiter);
 
 // Body parser, reading data from body into req.body
 app.use(express.json({ limit: "10kb" }));
-app.use(express.urlencoded({ extended: true, limit: '10kb' }));
+app.use(express.urlencoded({ extended: true, limit: "10kb" }));
 app.use(cookieParser());
 
 // Data santitization against NoSQL query injection
@@ -59,7 +59,7 @@ app.use(xss());
 // app.use(
 //   hpp({
 //     whitelist: [
-          // put the white list here
+// put the white list here
 //     ]
 //   })
 // )
@@ -77,7 +77,7 @@ app.use("/api/v1/reviews", reviewRouter);
 app.use("/api/v1/bookings", bookingRouter);
 app.use("/api/v1/favorites", favoriteRouter);
 
-app.all('*', (req, res, next) => {
+app.all("*", (req, res, next) => {
   next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));
 });
 
