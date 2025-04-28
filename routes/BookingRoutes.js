@@ -6,9 +6,21 @@ const router = express.Router({ mergeParams: true });
 
 router.use(authController.protect);
 
+// Place specific static routes FIRST before any parameterized routes
+
 router
-  .route("/booking-stats")
-  .get(authController.restrictTo("admin"), bookingController.getBookingsStats);
+  .route("/yearly-booking-stats")
+  .get(
+    authController.restrictTo("admin"),
+    bookingController.getYearlyBookingsStats
+  );
+
+router
+  .route("/monthly-booking-stats")
+  .get(
+    authController.restrictTo("admin"),
+    bookingController.getMonthlyBookingsStats
+  );
 
 router
   .route("/")

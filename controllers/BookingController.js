@@ -3,12 +3,6 @@ const factory = require("./HandlerFactory");
 const catchAsync = require("./../Utils/CatchAsync");
 const AppError = require("./../Utils/AppError");
 
-// TODO: Implement the functionality to upload the receipt photo. :)DONE
-// TODO: Rewrite the functionality of calculate the total income and check if the user has paid or not. :)DONE
-// TODO: Implement functionality to handle booking conflicts by checking if the requested time slot is already taken by another user.
-// If so, notify the user that the time slot is unavailable.
-
-
 exports.setCarUserIds = (req, res, next) => {
   if (!req.body.car) req.body.car = req.params.carId;
   if (!req.body.user) req.body.user = req.user.id;
@@ -17,11 +11,21 @@ exports.setCarUserIds = (req, res, next) => {
 
 exports.getAllBookings = factory.getAll(Booking);
 exports.getBooking = factory.getOne(Booking);
-exports.createBooking = factory.createOne(Booking);
+
+exports.createBooking = catchAsync(async (req, res, next) => {
+  const doc = await Booking.create(req.body);
+  res.status(201).json({
+    status: "success",
+    data: {
+      data: doc,
+    },
+  });
+});
+
 exports.updateBooking = factory.updateOne(Booking);
 exports.deleteBooking = factory.deleteOne(Booking);
 
-exports.getBookingsStats = catchAsync(async (req, res) => {
+exports.getMonthlyBookingsStats = catchAsync(async (req, res) => {
   const startOfMonth = new Date(
     new Date().getFullYear(),
     new Date().getMonth(),
@@ -56,7 +60,38 @@ exports.getBookingsStats = catchAsync(async (req, res) => {
 
   res.status(200).json({
     status: "success",
-    data: stats[0],
+    data: stats.length > 0 ? stats[0] : { totalRevenue: 0, totalBookings: 0, totalCancelled: 0 },
+  });
+});
+
+exports.getYearlyBookingsStats = catchAsync(async (req, res) => {
+  const startOfYear = new Date(new Date().getFullYear(), 0, 1); // January 1st of current year
+  const endOfYear = new Date(new Date().getFullYear(), 11, 31, 23, 59, 59); // December 31st of current year
+
+  const stats = await Booking.aggregate([
+    {
+      $match: {
+        paid: true,
+        createdAt: { $gte: startOfYear, $lte: endOfYear },
+      },
+    },
+    {
+      $group: {
+        _id: null,
+        totalRevenue: { $sum: "$totalCost" },
+        totalBookings: { $sum: 1 },
+        totalCancelled: {
+          $sum: {
+            $cond: [{ $eq: ["$status", "cancelled"] }, 1, 0],
+          },
+        },
+      },
+    },
+  ]);
+
+  res.status(200).json({
+    status: "success",
+    data: stats.length > 0 ? stats[0] : { totalRevenue: 0, totalBookings: 0, totalCancelled: 0 },
   });
 });
 
