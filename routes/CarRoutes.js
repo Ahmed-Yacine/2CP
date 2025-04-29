@@ -39,6 +39,8 @@ router
   .patch(
     authController.protect,
     authController.restrictTo("admin"),
+    carController.uploadCarPhotos,
+    carController.resizeCarPhotos,
     carController.updateCar
   )
   .delete(
