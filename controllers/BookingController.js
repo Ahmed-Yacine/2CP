@@ -60,7 +60,10 @@ exports.getMonthlyBookingsStats = catchAsync(async (req, res) => {
 
   res.status(200).json({
     status: "success",
-    data: stats.length > 0 ? stats[0] : { totalRevenue: 0, totalBookings: 0, totalCancelled: 0 },
+    data:
+      stats.length > 0
+        ? stats[0]
+        : { totalRevenue: 0, totalBookings: 0, totalCancelled: 0 },
   });
 });
 
@@ -91,7 +94,10 @@ exports.getYearlyBookingsStats = catchAsync(async (req, res) => {
 
   res.status(200).json({
     status: "success",
-    data: stats.length > 0 ? stats[0] : { totalRevenue: 0, totalBookings: 0, totalCancelled: 0 },
+    data:
+      stats.length > 0
+        ? stats[0]
+        : { totalRevenue: 0, totalBookings: 0, totalCancelled: 0 },
   });
 });
 
@@ -114,6 +120,34 @@ exports.cancelBookingForCurrentUser = catchAsync(async (req, res, next) => {
     status: "success",
     data: {
       booking,
+    },
+  });
+});
+
+exports.getAllCarsForTracking = catchAsync(async (req, res) => {
+  // Find bookings with status "ongoing" and populate the car details
+  const bookings = await Booking.find({ status: "ongoing" })
+    .populate({
+      path: "car",
+      select: "-__v", // Include all car fields except __v
+    })
+    .populate({
+      path: "user",
+      select: "name email photo", // Include only essential user information
+    });
+
+  // Extract the cars from the bookings with user and booking info
+  const carsWithInfo = bookings.map((booking) => ({
+    car: booking.car,
+    user: booking.user,
+    bookingId: booking._id,
+  }));
+
+  res.status(200).json({
+    status: "success",
+    results: carsWithInfo.length,
+    data: {
+      carsWithInfo,
     },
   });
 });
