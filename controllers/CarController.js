@@ -15,13 +15,10 @@ exports.resizeCarPhotos = catchAsync(async (req, res, next) => {
 
   // Process cover image
   if (req.files.imageCover) {
-    const result = await cloudinary.uploader.upload(
-      req.files.imageCover[0].path,
-      {
-        folder: "cars",
-        transformation: [{ width: 1200, height: 800, crop: "fill" }],
-      }
-    );
+    const result = await cloudinary.uploader.upload(req.files.imageCover[0].path, {
+      folder: "cars",
+      transformation: [{ width: 1200, height: 800, crop: "fill" }],
+    });
     req.body.imageCover = result.secure_url;
   }
 
@@ -73,7 +70,6 @@ exports.getCarStats = catchAsync(async (req, res) => {
 exports.aliasTopCars = (req, res, next) => {
   req.query.limit = "5";
   req.query.sort = "-ratingsAverage,dailyRate,monthlyRate";
-  req.query.fields =
-    "model,name,ratingsAverage,dailyRate,monthlyRate,imageCover,passengers,transmission,airConditioning";
+  req.query.fields = "model,name,ratingsAverage,dailyRate,monthlyRate,imageCover,passengers,transmission,airConditioning";
   next();
 };
