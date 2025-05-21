@@ -1,8 +1,5 @@
 const mongoose = require("mongoose");
 
-// TODO: Implement the double booking functionality. :)
-// TODO: Implement the functionality to cancel the booking if the user doesn't pay within 24 hours of the booking has Approved.
-
 const bookingSchema = new mongoose.Schema(
   {
     car: {
@@ -16,11 +13,11 @@ const bookingSchema = new mongoose.Schema(
       required: [true, "Booking must belong to a user"],
     },
     startDate: {
-      type: String,
+      type: Date,
       required: [true, "Please provide the start date"],
     },
     endDate: {
-      type: String,
+      type: Date,
       required: [true, "Please provide the end date"],
     },
     duration: {
@@ -58,7 +55,7 @@ const bookingSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["pending", "approved", "rejected", "cancelled"],
+      enum: ["pending", "approved", "ongoing", "rejected", "cancelled"],
       default: "pending",
     },
   },
@@ -67,6 +64,20 @@ const bookingSchema = new mongoose.Schema(
     toObject: { virtuals: true },
   }
 );
+
+// Static method to update booking statuses automatically
+bookingSchema.statics.updateBookingStatuses = async function () {
+  const now = new Date();
+  const bookings = await this.find({
+    status: "approved",
+    startDate: { $lte: now }
+  });
+
+  for (const booking of bookings) {
+    booking.status = "ongoing";
+    await booking.save();
+  }
+};
 
 bookingSchema.pre(/^find/, function (next) {
   this.populate("user").populate({
@@ -77,10 +88,15 @@ bookingSchema.pre(/^find/, function (next) {
 });
 
 bookingSchema.pre("save", async function (next) {
-  if (new Date(this.startDate) > new Date(this.endDate)) {
+  const startDate = new Date(this.startDate);
+  const endDate = new Date(this.endDate);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  if (startDate > endDate) {
     throw new Error("Start date must be before end date");
-  } else if (new Date(this.startDate) < new Date()) {
-    throw new Error("Start date must be in the future");
+  } else if (startDate < today) {
+    throw new Error("Start date must be today or in the future");
   }
 
   const Car = mongoose.model("Car");

@@ -4,6 +4,9 @@ const authController = require("../controllers/AuthController");
 
 const router = express.Router();
 
+// Add the email check route before authentication middleware
+router.post("/check-email", userController.checkEmailExists);
+
 router.post(
   "/signup",
   authController.handleDriverLicense,

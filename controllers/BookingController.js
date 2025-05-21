@@ -125,6 +125,9 @@ exports.cancelBookingForCurrentUser = catchAsync(async (req, res, next) => {
 });
 
 exports.getAllCarsForTracking = catchAsync(async (req, res) => {
+  // Update booking statuses before fetching ongoing bookings
+  await Booking.updateBookingStatuses();
+
   // Find bookings with status "ongoing" and populate the car details
   const bookings = await Booking.find({ status: "ongoing" })
     .populate({

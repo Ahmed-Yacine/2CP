@@ -54,7 +54,7 @@ exports.updateMe = catchAsync(async (req, res, next) => {
   }
 
   // 2) Filtered out unwanted fields names that are not allowed to be updated
-  const filteredBody = filterObj(req.body, "name", "username" , "email");
+  const filteredBody = filterObj(req.body, "name", "username", "email");
   if (req.file) filteredBody.photo = req.body.photo;
 
   // 3) Update user document
@@ -85,3 +85,21 @@ exports.createUser = (req, res) => {
     message: "This route is not defined! Please use /signup instead",
   });
 };
+
+exports.checkEmailExists = catchAsync(async (req, res) => {
+  const { email } = req.body;
+
+  if (!email) {
+    return res.status(400).json({
+      status: "error",
+      message: "Please provide an email address",
+    });
+  }
+
+  const user = await User.findOne({ email });
+
+  res.status(200).json({
+    status: "success",
+    exists: !!user,
+  });
+});

@@ -27,6 +27,7 @@
     "madge": "^8.0.0",
     "mongoose": "^8.9.5",
     "morgan": "^1.10.0",
+    "mqtt": "^5.13.0",
     "multer": "^1.4.5-lts.1",
     "nodemailer": "^6.10.0",
     "nodemon": "^3.1.9",
