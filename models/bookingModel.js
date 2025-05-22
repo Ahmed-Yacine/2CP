@@ -12,6 +12,15 @@ const bookingSchema = new mongoose.Schema(
       ref: "User",
       required: [true, "Booking must belong to a user"],
     },
+    locations: {
+      type: [
+        {
+          type: mongoose.Schema.ObjectId,
+          ref: "Location",
+        },
+      ],
+      default: [],
+    },
     startDate: {
       type: Date,
       required: [true, "Please provide the start date"],
@@ -70,7 +79,7 @@ bookingSchema.statics.updateBookingStatuses = async function () {
   const now = new Date();
   const bookings = await this.find({
     status: "approved",
-    startDate: { $lte: now }
+    startDate: { $lte: now },
   });
 
   for (const booking of bookings) {
@@ -80,10 +89,18 @@ bookingSchema.statics.updateBookingStatuses = async function () {
 };
 
 bookingSchema.pre(/^find/, function (next) {
-  this.populate("user").populate({
-    path: "car",
-    select: "name model registrationNumber",
-  });
+  this.populate({
+    path: "user",
+    select: "name email phoneNumber",
+  })
+    .populate({
+      path: "car",
+      select: "name model registrationNumber",
+    })
+    .populate({
+      path: "locations",
+      select: "longitude latitude createdAt",
+    });
   next();
 });
 

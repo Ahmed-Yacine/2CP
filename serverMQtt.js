@@ -1,7 +1,7 @@
 const mqtt = require("mqtt");
 const broker = "mqtt://test.mosquitto.org:1883";
 const receiveTopic = "locationUpdate";
-const publishTopic = "locationUpdate";
+const publishTopic = "locationUpdate_send";
 
 const client = mqtt.connect(broker);
 

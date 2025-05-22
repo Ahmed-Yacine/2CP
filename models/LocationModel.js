@@ -15,22 +15,33 @@ const locationSchema = new mongoose.Schema(
       max: 90,
     },
     bookingId: {
-      type: mongoose.Schema.Types.ObjectId,
+      type: mongoose.Schema.ObjectId,
       ref: "Booking",
       required: true,
     },
-    timestamp: {
+    createdAt: {
       type: Date,
       default: Date.now,
     },
   },
   {
-    timestamps: true, // Adds createdAt and updatedAt fields
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
   }
 );
 
 // Add index for faster queries
-locationSchema.index({ bookingId: 1, timestamp: -1 });
+locationSchema.index({ bookingId: 1, createdAt: -1 });
+
+// Add post-save middleware to update booking's locations array
+locationSchema.post("save", async function () {
+  const Booking = mongoose.model("Booking");
+  await Booking.findByIdAndUpdate(
+    this.bookingId,
+    { $push: { locations: this._id } },
+    { new: true }
+  );
+});
 
 // Add method to get coordinates as array [longitude, latitude]
 locationSchema.methods.getCoordinates = function () {

@@ -7,6 +7,7 @@ module.exports = class Email {
     this.to = user.email;
     this.firstName = user.name.split(" ")[0];
     this.url = url;
+    this.resetToken = url.split("/").pop(); // Extract the token from the URL
     this.from = `Ecarly <${process.env.EMAIL_FROM}>`;
   }
 
@@ -40,6 +41,7 @@ module.exports = class Email {
     const html = pug.renderFile(`${__dirname}/../views/email/${template}.pug`, {
       firstName: this.firstName,
       url: this.url,
+      resetToken: this.resetToken,
       subject,
     });
 

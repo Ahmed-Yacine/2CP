@@ -1,4 +1,5 @@
 const Booking = require("../models/bookingModel");
+const Location = require("../models/LocationModel");
 const factory = require("./HandlerFactory");
 const catchAsync = require("./../Utils/CatchAsync");
 const AppError = require("./../Utils/AppError");
@@ -9,7 +10,31 @@ exports.setCarUserIds = (req, res, next) => {
   next();
 };
 
-exports.getAllBookings = factory.getAll(Booking);
+exports.getAllBookings = catchAsync(async (req, res) => {
+  const bookings = await Booking.find()
+    .populate({
+      path: "car",
+      select: "-__v",
+    })
+    .populate({
+      path: "user",
+      select: "name email photo",
+    })
+    .populate({
+      path: "locations",
+      select: "longitude latitude createdAt",
+      options: { sort: { createdAt: -1 } },
+    });
+
+  res.status(200).json({
+    status: "success",
+    results: bookings.length,
+    data: {
+      bookings,
+    },
+  });
+});
+
 exports.getBooking = factory.getOne(Booking);
 
 exports.createBooking = catchAsync(async (req, res, next) => {
@@ -137,13 +162,24 @@ exports.getAllCarsForTracking = catchAsync(async (req, res) => {
     .populate({
       path: "user",
       select: "name email photo", // Include only essential user information
+    })
+    .populate({
+      path: "locations",
+      select: "longitude latitude createdAt", // Include location coordinates and timestamp
+      options: { sort: { createdAt: -1 } }, // Get the most recent locations first
     });
 
   // Extract the cars from the bookings with user and booking info
   const carsWithInfo = bookings.map((booking) => ({
     car: booking.car,
     user: booking.user,
-    bookingId: booking._id,
+    booking: {
+      locations: booking.locations,
+      _id: booking._id,
+      startDate: booking.startDate,
+      endDate: booking.endDate,
+    },
+    latestLocation: booking.locations[0] || null, // Get the most recent location
   }));
 
   res.status(200).json({
