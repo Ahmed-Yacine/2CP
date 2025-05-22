@@ -37,16 +37,32 @@ client.on("connect", () => {
 // Handle incoming messages
 client.on("message", (topic, message) => {
   console.log("Received message on topic:", topic);
+  const messageStr = message.toString();
+
   try {
-    const data = JSON.parse(message.toString());
+    // Try to parse as JSON first
+    const data = JSON.parse(messageStr);
     console.log("Message data:", data);
 
     if (topic === "locationUpdate") {
-      const { carID, longitude, latitude } = data;
-      console.log(`Car ${carID} location: ${latitude}, ${longitude}`);
+      // Handle both possible data structures
+      const carID = data.carID || data.id;
+      const latitude = data.latitude || data.lat;
+      const longitude = data.longitude || data.lon;
+
+      if (latitude !== undefined && longitude !== undefined) {
+        console.log(
+          `Location received: ${latitude}, ${longitude}${
+            carID ? ` (Car: ${carID})` : ""
+          }`
+        );
+      } else {
+        console.log("Received location data with missing coordinates:", data);
+      }
     }
   } catch (error) {
-    console.error("Error parsing message:", error);
+    // If JSON parsing fails, log the raw message
+    console.log("Received non-JSON message:", messageStr);
   }
 });
 
@@ -64,5 +80,5 @@ client.on("close", () => {
 // Export the functions
 module.exports = {
   publishMessage,
-  RingCar
+  RingCar,
 };

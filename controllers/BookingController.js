@@ -16,9 +16,9 @@ exports.getAllBookings = catchAsync(async (req, res) => {
       path: "car",
       select: "-__v",
     })
-    .populate({
+    .populate({ 
       path: "user",
-      select: "name email photo",
+      select: "-_v",
     })
     .populate({
       path: "locations",
