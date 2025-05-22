@@ -34,6 +34,10 @@ const bookingSchema = new mongoose.Schema(
       default: function () {
         const startDate = new Date(this.startDate);
         const endDate = new Date(this.endDate);
+
+        // Add one day to endDate to include the last day
+        endDate.setDate(endDate.getDate() + 1);
+
         const timeDifference = endDate - startDate;
 
         const daysInMonth = (date) => {
@@ -42,10 +46,11 @@ const bookingSchema = new mongoose.Schema(
 
         let totalDays = Math.floor(timeDifference / (1000 * 60 * 60 * 24));
         let months = 0;
+        let currentDate = new Date(startDate);
 
-        while (totalDays >= daysInMonth(startDate)) {
-          totalDays -= daysInMonth(startDate);
-          startDate.setMonth(startDate.getMonth() + 1);
+        while (totalDays >= daysInMonth(currentDate)) {
+          totalDays -= daysInMonth(currentDate);
+          currentDate.setMonth(currentDate.getMonth() + 1);
           months++;
         }
 

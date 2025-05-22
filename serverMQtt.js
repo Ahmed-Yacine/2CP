@@ -1,38 +1,6 @@
 const mqtt = require("mqtt");
 const broker = "mqtt://test.mosquitto.org:1883";
-const receiveTopic = "locationUpdate";
-const publishTopic = "locationUpdate_send";
-
-// Get the io instance from server.js
-let io;
-function setIO(ioInstance) {
-  io = ioInstance;
-}
-
-// Store last received timestamp for each car
-const carLastSeen = new Map();
-const TIMEOUT_DURATION = 3 * 60 * 1000; // 3 minutes in milliseconds
-
-// Function to check for inactive cars
-function checkInactiveCars() {
-  const now = Date.now();
-  carLastSeen.forEach((lastSeen, carID) => {
-    if (now - lastSeen > TIMEOUT_DURATION) {
-      // Send notification to admin
-      if (io) {
-        io.to("admin_room").emit("car_inactive", {
-          type: "car_inactive",
-          carID,
-          lastSeen: new Date(lastSeen).toISOString(),
-          message: `Car ${carID} has not sent location data for more than 3 minutes`,
-        });
-      }
-    }
-  });
-}
-
-// Check for inactive cars every minute
-setInterval(checkInactiveCars, 60000);
+const Topic = "locationUpdate";
 
 const client = mqtt.connect(broker);
 
@@ -52,23 +20,15 @@ function RingCar(carID) {
   publishMessage({ action: "ring" }, `Ring_${carID}`);
 }
 
-// Function to send location to admin
-function sendLocationToAdmin(data) {
-  if (io) {
-    // Send to admin room
-    io.to("admin_room").emit("location_update", data);
-  }
-}
-
 // Handle connection
 client.on("connect", () => {
   console.log("Connected to MQTT broker");
   // Subscribe to the topic
-  client.subscribe(receiveTopic, (err) => {
+  client.subscribe(Topic, (err) => {
     if (err) {
       console.error("Subscription error:", err);
     } else {
-      console.log(`Subscribed to ${receiveTopic}`);
+      console.log(`Subscribed to ${Topic}`);
     }
   });
 });
@@ -96,19 +56,8 @@ client.on("message", (topic, message) => {
           }`
         );
 
-        // Update last seen timestamp for the car
-        if (carID) {
-          carLastSeen.set(carID, Date.now());
-        }
-
-        // Send location data to admin in real-time
-        sendLocationToAdmin({
-          type: "location_update",
-          carID,
-          latitude,
-          longitude,
-          timestamp: new Date().toISOString(),
-        });
+        // here you should send the location to the admin
+      
       } else {
         console.log("Received location data with missing coordinates:", data);
       }
@@ -134,5 +83,4 @@ client.on("close", () => {
 module.exports = {
   publishMessage,
   RingCar,
-  setIO,
 };
