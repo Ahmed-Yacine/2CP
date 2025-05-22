@@ -90,8 +90,7 @@ bookingSchema.statics.updateBookingStatuses = async function () {
 
 bookingSchema.pre(/^find/, function (next) {
   this.populate({
-    path: "user",
-    select: "name email phoneNumber",
+    path: "user"
   })
     .populate({
       path: "car",
