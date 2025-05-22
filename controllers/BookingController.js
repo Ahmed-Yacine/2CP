@@ -16,9 +16,8 @@ exports.getAllBookings = catchAsync(async (req, res) => {
       path: "car",
       select: "-__v",
     })
-    .populate({ 
+    .populate({
       path: "user",
-      select: "-_v",
     })
     .populate({
       path: "locations",
@@ -35,7 +34,9 @@ exports.getAllBookings = catchAsync(async (req, res) => {
   });
 });
 
-exports.getBooking = factory.getOne(Booking);
+exports.getBooking = factory.getOne(Booking, {
+  path: "user",
+});
 
 exports.createBooking = catchAsync(async (req, res, next) => {
   const doc = await Booking.create(req.body);
