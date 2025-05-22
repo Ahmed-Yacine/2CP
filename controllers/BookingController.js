@@ -12,6 +12,7 @@ exports.setCarUserIds = (req, res, next) => {
 
 exports.getAllBookings = catchAsync(async (req, res) => {
   const bookings = await Booking.find()
+    .sort(req.query.sort || "-createdAt") // Default sort by newest first
     .populate({
       path: "car",
       select: "-__v",
