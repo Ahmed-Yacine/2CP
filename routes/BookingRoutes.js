@@ -23,6 +23,12 @@ router
   );
 
 router
+  .route("/user-bookings")
+  .get(
+    bookingController.getAllBookingsForUser
+  );
+
+router
   .route("/getCarsForTracking")
   .get(
     authController.restrictTo("admin"),

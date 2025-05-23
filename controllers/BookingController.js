@@ -35,6 +35,16 @@ exports.getAllBookings = catchAsync(async (req, res) => {
   });
 });
 
+exports.getAllBookingsForUser = catchAsync(async (req, res) => {
+  const bookings = await Booking.find({ user: req.user.id });
+  res.status(200).json({
+    status: "success",
+    results: bookings.length,
+    data: { bookings },
+  });
+});
+
+
 exports.getBooking = factory.getOne(Booking);
 
 exports.createBooking = catchAsync(async (req, res, next) => {
