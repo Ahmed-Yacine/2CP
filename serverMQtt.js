@@ -1,8 +1,45 @@
 const mqtt = require("mqtt");
+const { Server } = require("socket.io");
+
 const broker = "mqtt://test.mosquitto.org:1883";
 const Topic = "locationUpdate";
 
+// Store admin socket and io instance
+let adminSocket = null;
+let io = null;
+
+// MQTT client
 const client = mqtt.connect(broker);
+
+// Function to initialize MQTT with existing HTTP server
+function initializeMQTT(httpServer) {
+  // Create Socket.IO server using the existing HTTP server
+  io = new Server(httpServer, {
+    cors: {
+      origin: "*", // You might want to restrict this in production
+      methods: ["GET", "POST"],
+    },
+    transports: ["websocket", "polling"],
+  });
+
+  // Socket.IO connection handling
+  io.on("connection", (socket) => {
+    console.log("Socket.IO client connected:", socket.id);
+    // Set this connection as admin
+    adminSocket = socket.id;
+    console.log("Admin connected:", socket.id);
+
+    socket.on("disconnect", () => {
+      console.log("Client disconnected:", socket.id);
+      // Clear admin socket when disconnected
+      if (adminSocket === socket.id) {
+        adminSocket = null;
+      }
+    });
+  });
+
+  console.log("MQTT and Socket.IO services initialized");
+}
 
 // Function to publish a message
 function publishMessage(message, topic) {
@@ -20,7 +57,7 @@ function RingCar(carID) {
   publishMessage({ action: "ring" }, `Ring_${carID}`);
 }
 
-// Handle connection
+// Handle MQTT connection
 client.on("connect", () => {
   console.log("Connected to MQTT broker");
   // Subscribe to the topic
@@ -56,8 +93,17 @@ client.on("message", (topic, message) => {
           }`
         );
 
-        // here you should send the location to the admin
-      
+        // Send location update to all connected clients
+        const locationData = {
+          carID,
+          latitude,
+          longitude,
+          timestamp: new Date().toISOString(),
+        };
+
+        // Emit to all connected clients instead of just admin
+        io.emit("locationUpdate", locationData);
+        console.log("Emitted location update to all clients");
       } else {
         console.log("Received location data with missing coordinates:", data);
       }
@@ -68,19 +114,20 @@ client.on("message", (topic, message) => {
   }
 });
 
-// Handle errors
+// Handle MQTT errors
 client.on("error", (err) => {
-  console.error("Connection error:", err);
+  console.error("MQTT connection error:", err);
 });
 
-// Handle disconnection
+// Handle MQTT disconnection
 client.on("close", () => {
   console.log("Disconnected from MQTT broker");
-  process.exit(0);
 });
 
-// Export the functions
+// Export the functions and initialization function
 module.exports = {
+  initializeMQTT,
   publishMessage,
   RingCar,
+  getIO: () => io, // Getter function to access io instance
 };

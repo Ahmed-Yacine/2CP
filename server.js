@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 const http = require("http");
+const { initializeMQTT } = require("./serverMQtt");
 
 // Uncaught Exception
 process.on("uncaughtException", (err) => {
@@ -22,9 +23,15 @@ mongoose.connect(DB).then(async (con) => {
   console.log("DB connection successful!");
 });
 
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 8800;
+
+// Create single HTTP server
 const server = http.createServer(app);
 
+// Initialize MQTT functionality with the shared server
+initializeMQTT(server);
+
+// Start the combined server
 server.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
@@ -38,9 +45,9 @@ process.on("unhandledRejection", (err) => {
   });
 });
 
-process.on('SIGTERM', () => {
-  console.log('👋 SIGTERM RECEIVED. Shutting down gracefully');
+process.on("SIGTERM", () => {
+  console.log("👋 SIGTERM RECEIVED. Shutting down gracefully");
   server.close(() => {
-    console.log('💥 Process terminated!');
+    console.log("💥 Process terminated!");
   });
 });
