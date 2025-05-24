@@ -3,7 +3,7 @@ const { Server } = require("socket.io");
 
 const broker = "mqtt://test.mosquitto.org:1883";
 const Topic = "locationUpdate";
-const INACTIVITY_THRESHOLD = 5 * 60 * 1000; // 5 minutes in milliseconds
+const INACTIVITY_THRESHOLD = 1 * 60 * 1000; // 5 minutes in milliseconds
 const ADMIN_SECRET = process.env.ADMIN_SECRET || "admin123"; // Change this in production
 
 // Store admin socket and io instance
