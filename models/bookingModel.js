@@ -86,70 +86,57 @@ const bookingSchema = new mongoose.Schema(
   }
 );
 
+// Add indexes for better query performance
+bookingSchema.index({ status: 1 }); // Index on status field
 // Static method to update booking statuses automatically
 bookingSchema.statics.updateBookingStatuses = async function () {
   const now = new Date();
 
   // Update approved bookings to ongoing
-  const approvedBookings = await this.find({
-    status: "approved",
-    startDate: { $lte: now },
-  });
-
-  for (const booking of approvedBookings) {
-    booking.status = "ongoing";
-    await booking.save();
-  }
+  await this.updateMany(
+    {
+      status: "approved",
+      startDate: { $lte: now },
+    },
+    {
+      $set: { status: "ongoing" },
+    }
+  );
 
   // Update ongoing bookings to completed
-  const ongoingBookings = await this.find({
-    status: "ongoing",
-    endDate: { $lte: now },
-  });
-
-  for (const booking of ongoingBookings) {
-    booking.status = "completed";
-    await booking.save();
-  }
+  await this.updateMany(
+    {
+      status: "ongoing",
+      endDate: { $lte: now },
+    },
+    {
+      $set: { status: "completed" },
+    }
+  );
 };
 
-// Schedule status updates to run every 24 hours
+// Schedule status updates to run every minute
 bookingSchema.statics.scheduleStatusUpdates = function () {
-  // Calculate time until next midnight
-  const getTimeUntilMidnight = () => {
-    const now = new Date();
-    const midnight = new Date(now);
-    midnight.setHours(24, 0, 0, 0);
-    return midnight - now;
-  };
-
   // Function to run the update
   const runUpdate = async () => {
     try {
       await this.updateBookingStatuses();
-      console.log(
-        "Booking statuses updated successfully at:",
-        new Date().toISOString()
-      );
+      // console.log(
+      //   "Booking statuses updated successfully at:",
+      //   new Date().toISOString()
+      // );
     } catch (error) {
       console.error("Error updating booking statuses:", error);
     }
   };
 
-  // Schedule the first run at midnight
-  setTimeout(() => {
-    // Run immediately
-    runUpdate();
+  // Run immediately
+  runUpdate();
 
-    // Then run every 24 hours
-    setInterval(runUpdate, 24 * 60 * 60 * 1000);
-  }, getTimeUntilMidnight());
+  // Then run every minute
+  setInterval(runUpdate, 60 * 1000); // 60 seconds = 1 minute
 
-  // Log when the next update will occur
-  console.log(
-    "Next booking status update scheduled for:",
-    new Date(Date.now() + getTimeUntilMidnight()).toISOString()
-  );
+  // console.log("Booking status updates scheduled to run every minute");
 };
 
 bookingSchema.pre(/^find/, function (next) {
@@ -168,15 +155,18 @@ bookingSchema.pre(/^find/, function (next) {
 });
 
 bookingSchema.pre("save", async function (next) {
-  const startDate = new Date(this.startDate);
-  const endDate = new Date(this.endDate);
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  // Only validate dates for new bookings
+  if (this.isNew) {
+    const startDate = new Date(this.startDate);
+    const endDate = new Date(this.endDate);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
 
-  if (startDate > endDate) {
-    throw new Error("Start date must be before end date");
-  } else if (startDate < today) {
-    throw new Error("Start date must be today or in the future");
+    if (startDate > endDate) {
+      throw new Error("Start date must be before end date");
+    } else if (startDate < today) {
+      throw new Error("Start date must be today or in the future");
+    }
   }
 
   const Car = mongoose.model("Car");
