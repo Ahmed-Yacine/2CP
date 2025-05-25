@@ -90,7 +90,7 @@ class CarAvailabilityService {
 
       const bookings = await Booking.find({
         car: carId,
-        status: { $in: ["approved", "ongoing", "pending"] },
+        status: { $in: ["approved", "ongoing"] },
         $or: [
           { startDate: { $gte: fromDate, $lte: toDate } },
           { endDate: { $gte: fromDate, $lte: toDate } },
