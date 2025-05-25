@@ -30,7 +30,7 @@ const userSchema = new mongoose.Schema({
   photo: {
     type: String,
     default:
-      "https://res.cloudinary.com/dj62xbjdj/image/upload/v1744405654/users/cmyxe78ik9z4ydga4yfj.jpg",
+      "https://res.cloudinary.com/dj62xbjdj/image/upload/v1748200621/users/bemo9vdpzccahhf6qzi2.webp",
   },
   driverLicense: {
     type: [String],
