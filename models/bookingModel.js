@@ -115,7 +115,7 @@ bookingSchema.statics.updateBookingStatuses = async function () {
   );
 };
 
-// Schedule status updates to run every minute
+// Schedule status updates to run every 10 seconds
 bookingSchema.statics.scheduleStatusUpdates = function () {
   // Function to run the update
   const runUpdate = async () => {
@@ -133,10 +133,10 @@ bookingSchema.statics.scheduleStatusUpdates = function () {
   // Run immediately
   runUpdate();
 
-  // Then run every minute
-  setInterval(runUpdate, 60 * 1000); // 60 seconds = 1 minute
+  // Then run every 10 seconds
+  setInterval(runUpdate, 10 * 1000); // 10 seconds
 
-  // console.log("Booking status updates scheduled to run every minute");
+  // console.log("Booking status updates scheduled to run every 10 seconds");
 };
 
 bookingSchema.pre(/^find/, function (next) {

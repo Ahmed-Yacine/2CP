@@ -258,6 +258,7 @@ client.on("message", (topic, message) => {
       const carID = data.carID || data.id;
       const latitude = data.latitude || data.lat;
       const longitude = data.longitude || data.lon;
+      const batteryLow = data.status || data.batteryLow;
 
       if (latitude !== undefined && longitude !== undefined) {
         console.log(
@@ -271,6 +272,7 @@ client.on("message", (topic, message) => {
           carID,
           latitude,
           longitude,
+          batteryLow,
           timestamp: new Date().toISOString(),
         };
 
