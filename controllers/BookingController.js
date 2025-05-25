@@ -254,6 +254,15 @@ exports.updateBooking = catchAsync(async (req, res, next) => {
 
 exports.deleteBooking = factory.deleteOne(Booking);
 
+exports.DetectCancelledBookings = catchAsync(async (req, res, next) => {
+  const bookings = await Booking.find({ status: "cancelled" });
+  res.status(200).json({
+    status: "success",
+    results: bookings.length,
+    data: { bookings },
+  });
+});
+
 exports.getMonthlyBookingsStats = catchAsync(async (req, res) => {
   const startOfMonth = new Date(
     new Date().getFullYear(),

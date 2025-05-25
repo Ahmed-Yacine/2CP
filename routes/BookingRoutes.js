@@ -46,6 +46,12 @@ router.get(
   bookingController.getAllCarsForTracking
 );
 
+router.get(
+  "/cancelled-bookings",
+  authController.restrictTo("admin"),
+  bookingController.DetectCancelledBookings
+);
+
 router
   .route("/:id")
   .get(bookingController.getBooking)
