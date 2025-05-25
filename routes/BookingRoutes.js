@@ -4,54 +4,61 @@ const authController = require("../controllers/AuthController");
 
 const router = express.Router({ mergeParams: true });
 
+// Protect all routes after this middleware
 router.use(authController.protect);
 
-// Place specific static routes FIRST before any parameterized routes
+// NEW AVAILABILITY ROUTES
+// Check if a car is available for specific dates
+router.get(
+  "/check-availability/:carId",
+  bookingController.checkCarAvailability
+);
 
-router
-  .route("/yearly-booking-stats")
-  .get(
-    authController.restrictTo("admin"),
-    bookingController.getYearlyBookingsStats
-  );
+// Get all unavailable dates for a car
+router.get(
+  "/unavailable-dates/:carId",
+  bookingController.getCarUnavailableDates
+);
 
-router
-  .route("/monthly-booking-stats")
-  .get(
-    authController.restrictTo("admin"),
-    bookingController.getMonthlyBookingsStats
-  );
+// EXISTING ROUTES (Updated with availability checking)
+router.route("/").get(bookingController.getAllBookings).post(
+  bookingController.setCarUserIds,
+  bookingController.createBooking // Now includes availability check
+);
 
-router
-  .route("/user-bookings")
-  .get(
-    bookingController.getAllBookingsForUser
-  );
+router.get("/my-bookings", bookingController.getAllBookingsForUser);
 
-router
-  .route("/getCarsForTracking")
-  .get(
-    authController.restrictTo("admin"),
-    bookingController.getAllCarsForTracking
-  );
+router.get(
+  "/monthly-stats",
+  authController.restrictTo("admin"),
+  bookingController.getMonthlyBookingsStats
+);
 
-router
-  .route("/")
-  .get(authController.restrictTo("admin"), bookingController.getAllBookings)
-  .post(bookingController.setCarUserIds, bookingController.createBooking);
+router.get(
+  "/yearly-stats",
+  authController.restrictTo("admin"),
+  bookingController.getYearlyBookingsStats
+);
 
-router
-  .route("/cancel/:id")
-  .patch(
-    authController.restrictTo("user"),
-    bookingController.cancelBookingForCurrentUser
-  );
+router.get(
+  "/cars-tracking",
+  authController.restrictTo("admin"),
+  bookingController.getAllCarsForTracking
+);
 
-router.use(authController.restrictTo("admin"));
 router
   .route("/:id")
   .get(bookingController.getBooking)
-  .patch(bookingController.updateBooking)
-  .delete(bookingController.deleteBooking);
+  .patch(bookingController.updateBooking) // Now includes availability check
+  .delete(authController.restrictTo("admin"), bookingController.deleteBooking);
+
+router.patch("/cancel/:id", bookingController.cancelBookingForCurrentUser);
+
+// NEW: Route for approving bookings (admin only)
+router.patch(
+  "/approve/:id",
+  authController.restrictTo("admin"),
+  bookingController.approveBooking
+);
 
 module.exports = router;
