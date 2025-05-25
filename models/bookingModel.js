@@ -89,55 +89,55 @@ const bookingSchema = new mongoose.Schema(
 // Add indexes for better query performance
 bookingSchema.index({ status: 1 }); // Index on status field
 // Static method to update booking statuses automatically
-bookingSchema.statics.updateBookingStatuses = async function () {
-  const now = new Date();
+// bookingSchema.statics.updateBookingStatuses = async function () {
+//   const now = new Date();
 
-  // Update approved bookings to ongoing
-  await this.updateMany(
-    {
-      status: "approved",
-      startDate: { $lte: now },
-    },
-    {
-      $set: { status: "ongoing" },
-    }
-  );
+//   // Update approved bookings to ongoing
+//   await this.updateMany(
+//     {
+//       status: "approved",
+//       startDate: { $lte: now },
+//     },
+//     {
+//       $set: { status: "ongoing" },
+//     }
+//   );
 
-  // Update ongoing bookings to completed
-  await this.updateMany(
-    {
-      status: "ongoing",
-      endDate: { $lte: now },
-    },
-    {
-      $set: { status: "completed" },
-    }
-  );
-};
+//   // Update ongoing bookings to completed
+//   await this.updateMany(
+//     {
+//       status: "ongoing",
+//       endDate: { $lte: now },
+//     },
+//     {
+//       $set: { status: "completed" },
+//     }
+//   );
+// };
 
 // Schedule status updates to run every 10 seconds
-bookingSchema.statics.scheduleStatusUpdates = function () {
-  // Function to run the update
-  const runUpdate = async () => {
-    try {
-      await this.updateBookingStatuses();
-      // console.log(
-      //   "Booking statuses updated successfully at:",
-      //   new Date().toISOString()
-      // );
-    } catch (error) {
-      console.error("Error updating booking statuses:", error);
-    }
-  };
+// bookingSchema.statics.scheduleStatusUpdates = function () {
+//   // Function to run the update
+//   const runUpdate = async () => {
+//     try {
+//       await this.updateBookingStatuses();
+//       // console.log(
+//       //   "Booking statuses updated successfully at:",
+//       //   new Date().toISOString()
+//       // );
+//     } catch (error) {
+//       console.error("Error updating booking statuses:", error);
+//     }
+//   };
 
-  // Run immediately
-  runUpdate();
+//   // Run immediately
+//   runUpdate();
 
-  // Then run every 10 seconds
-  setInterval(runUpdate, 10 * 1000); // 10 seconds
+//   // Then run every 10 seconds
+//   setInterval(runUpdate, 10 * 1000); // 10 seconds
 
-  // console.log("Booking status updates scheduled to run every 10 seconds");
-};
+//   // console.log("Booking status updates scheduled to run every 10 seconds");
+// };
 
 bookingSchema.pre(/^find/, function (next) {
   this.populate({
@@ -187,6 +187,6 @@ bookingSchema.pre("save", async function (next) {
 const Booking = mongoose.model("Booking", bookingSchema);
 
 // Start the scheduler when the model is first loaded
-Booking.scheduleStatusUpdates();
+// Booking.scheduleStatusUpdates();
 
 module.exports = Booking;
