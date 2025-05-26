@@ -3,7 +3,7 @@ const { Server } = require("socket.io");
 
 const broker = "mqtt://test.mosquitto.org:1883";
 const Topic = "locationUpdate";
-const INACTIVITY_THRESHOLD = 1 * 60 * 1000; // 5 minutes in milliseconds
+const INACTIVITY_THRESHOLD = 3 * 60 * 1000; // 5 minutes in milliseconds
 const ADMIN_SECRET = process.env.ADMIN_SECRET || "admin123"; // Change this in production
 
 // Store admin socket and io instance
@@ -211,13 +211,13 @@ function checkInactivity() {
   const timeSinceLastMessage = currentTime - lastMessageTime;
 
   if (timeSinceLastMessage >= INACTIVITY_THRESHOLD) {
-    console.log("No MQTT messages received for 5 minutes");
+    console.log("No MQTT messages received for 2 minutes");
     console.log("Current admin socket ID:", adminSocket);
 
     if (adminSocket && io) {
       console.log("Attempting to emit inactivity to admin:", adminSocket);
       io.emit("mqttInactivity", {
-        message: "No MQTT messages received for 5 minutes",
+        message: "No MQTT messages received for 3 minutes",
         lastMessageTime: new Date(lastMessageTime).toISOString(),
         socketId: adminSocket,
       });
